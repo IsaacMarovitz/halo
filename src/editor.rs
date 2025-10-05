@@ -100,7 +100,7 @@ impl Editor {
                 return (Event::None, cmd);
             }
             Message::Action(action) => {
-                //TODO fix not being able to use hotkeys while text editor is focused
+                // TODO: Fix not being able to use hotkeys while text editor is focused
                 let should_validate = action.is_edit() && self.auto_validate;
                 self.content.perform(action);
 
@@ -142,7 +142,7 @@ impl Editor {
                     Task::none()
                 };
 
-                //TODO loading error msg
+                // TODO: Loading error msg
                 self.is_loading = false;
 
                 return (Event::None, cmds);
@@ -163,7 +163,7 @@ impl Editor {
                 if let Ok(path) = result {
                     self.shader_path = Some(path);
                 }
-                //TODO handle error
+                // TODO: Handle error
                 return (Event::None, self.save_prefs());
             }
             Message::Validate => {
@@ -235,6 +235,7 @@ impl Editor {
         let text_editor = text_editor(&self.content)
             .font(JETBRAINS_MONO)
             .padding(10)
+            .height(Length::Fill)
             .highlight_with::<Highlighter>(
                 highlighter::Settings {
                     theme: self.theme,
@@ -254,7 +255,7 @@ impl Editor {
 
         let char_count = container(
             //TODO expose a len() function from iced editor to avoid extra allocation
-            text(self.content.text().len()),
+            text(self.content.text().len().to_string() + " chars"),
         )
         .align_x(Horizontal::Right);
 
@@ -269,8 +270,10 @@ impl Editor {
                     tmp_error_view(message, &errors, &self.content.text()),
                     info,
                 ]
+                    .height(Length::Fill)
             } else {
                 column![text_editor, info]
+                    .height(Length::Fill)
             };
 
         container(content)

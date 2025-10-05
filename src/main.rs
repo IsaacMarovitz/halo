@@ -41,7 +41,7 @@ struct Halo {
     panes: pane_grid::State<Pane>,
 }
 
-//TODO toggle editor
+// TODO: Toggle editor
 #[derive(Clone, Debug)]
 enum Message {
     PaneResized(pane_grid::ResizeEvent),
@@ -56,7 +56,7 @@ enum Message {
 impl Halo {
     fn new(_flags: ()) -> (Self, Task<Message>) {
         (
-            //TODO save settings
+            // TODO: Save settings
             Self {
                 viewer: Viewer::default(),
                 editor: Editor::default(),
