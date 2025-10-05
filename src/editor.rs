@@ -8,7 +8,7 @@ use crate::theme::{ContainerClass, TextClass, Theme};
 use crate::{FragmentShader, JETBRAINS_MONO, preferences};
 use iced::alignment::Horizontal;
 use iced::keyboard::key::Named;
-use iced::widget::text_editor::Action;
+use iced::widget::text_editor::{Action, Binding, KeyPress};
 use iced::widget::{
     button, checkbox, column, container, row, scrollable, text, text_editor, tooltip,
 };
@@ -68,15 +68,27 @@ impl Default for Editor {
 }
 
 impl Editor {
-    pub fn keypress(&self, key: keyboard::Key, modifiers: keyboard::Modifiers) -> Option<Message> {
-        match key.as_ref() {
-            keyboard::Key::Named(Named::Enter) if modifiers.control() => Some(Message::Validate),
-            keyboard::Key::Character("s") if modifiers.command() => Some(Message::Save),
-            keyboard::Key::Character("z") if modifiers.command() => Some(Message::Undo),
-            keyboard::Key::Character("y") if modifiers.command() => Some(Message::Redo),
-            keyboard::Key::Character("f") if modifiers.command() => Some(Message::Search),
-            keyboard::Key::Named(Named::Tab) => Some(Message::Indent),
-            _ => None,
+    pub fn keypress(&self, keypress: KeyPress) -> Option<Binding<Message>> {
+        match keypress.key.as_ref() {
+            keyboard::Key::Named(Named::Enter) if keypress.modifiers.control() => {
+                Some(Binding::Custom(Message::Validate))
+            }
+            keyboard::Key::Named(Named::Tab) => {
+                Some(Binding::Custom(Message::Indent))
+            }
+            keyboard::Key::Character("s") if keypress.modifiers.command() => {
+                Some(Binding::Custom(Message::Save))
+            }
+            keyboard::Key::Character("z") if keypress.modifiers.command() => {
+                Some(Binding::Custom(Message::Undo))
+            }
+            keyboard::Key::Character("y") if keypress.modifiers.command() => {
+                Some(Binding::Custom(Message::Redo))
+            }
+            keyboard::Key::Character("f") if keypress.modifiers.command() => {
+                Some(Binding::Custom(Message::Search))
+            }
+            _ => Binding::from_key_press(keypress),
         }
     }
 
@@ -196,7 +208,22 @@ impl Editor {
                 //TODO!
             }
             Message::Indent => {
-                //TODO!
+                const INDENT_SIZE: usize = 4;
+                const USE_SPACES: bool = true;
+
+                let indent_char = if USE_SPACES {
+                    " ".repeat(INDENT_SIZE)
+                } else {
+                    "\t".to_string()
+                };
+
+                for ch in indent_char.chars() {
+                    self.content.perform(Action::Edit(text_editor::Edit::Insert(ch)));
+                }
+
+                if self.auto_validate {
+                    return self.update(Message::Validate);
+                }
             }
             Message::Search => {
                 //TODO!
@@ -236,6 +263,7 @@ impl Editor {
             .font(JETBRAINS_MONO)
             .padding(10)
             .height(Length::Fill)
+            .key_binding(|key| self.keypress(key))
             .highlight_with::<Highlighter>(
                 highlighter::Settings {
                     theme: self.theme,
@@ -270,10 +298,9 @@ impl Editor {
                     tmp_error_view(message, &errors, &self.content.text()),
                     info,
                 ]
-                    .height(Length::Fill)
+                .height(Length::Fill)
             } else {
-                column![text_editor, info]
-                    .height(Length::Fill)
+                column![text_editor, info].height(Length::Fill)
             };
 
         container(content)

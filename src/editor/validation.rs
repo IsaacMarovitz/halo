@@ -3,9 +3,9 @@ use crate::editor::{Element, Message, icon};
 use crate::theme::ContainerClass;
 use iced::widget::tooltip;
 use naga::valid::{Capabilities, ModuleInfo, ShaderStages, ValidationError};
+use naga::{ShaderStage, WithSpan};
 use std::ops::Range;
 use std::sync::Arc;
-use naga::{ShaderStage, WithSpan};
 
 #[derive(Default, Debug)]
 pub enum Status {
@@ -58,11 +58,15 @@ pub async fn validate(shader: Arc<FragmentShader>) -> Result<Arc<FragmentShader>
                 .collect::<Vec<_>>(),
         })?;
 
-    let contains_frag = parsed.entry_points.iter()
+    let contains_frag = parsed
+        .entry_points
+        .iter()
         .any(|ep| ep.name == "fs_main" && ep.stage == ShaderStage::Fragment);
 
     if !contains_frag {
-        return Err(Error::Validation("Missing fragment entry point 'fs_main'.".to_string()));
+        return Err(Error::Validation(
+            "Missing fragment entry point 'fs_main'.".to_string(),
+        ));
     }
 
     naga::valid::Validator::new(

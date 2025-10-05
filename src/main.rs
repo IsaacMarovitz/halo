@@ -27,7 +27,6 @@ const JETBRAINS_MONO: Font = Font {
 fn main() -> iced::Result {
     iced::application(Halo::title, Halo::update, Halo::view)
         .theme(Halo::theme)
-        .subscription(Halo::subscription)
         .font(include_bytes!("../fonts/JetBrainsMono-Regular.ttf").as_slice())
         .font(include_bytes!("../fonts/halo-icons.ttf").as_slice())
         .default_font(Font::MONOSPACE)
@@ -46,10 +45,6 @@ struct Halo {
 enum Message {
     PaneResized(pane_grid::ResizeEvent),
     Editor(editor::Message),
-    KeyPressed {
-        key: keyboard::Key,
-        modifiers: keyboard::Modifiers,
-    },
     Loaded(Result<(Preferences, Arc<FragmentShader>), preferences::Error>),
 }
 
@@ -94,11 +89,6 @@ impl Halo {
             Message::PaneResized(pane_grid::ResizeEvent { split, ratio }) => {
                 self.panes.resize(split, ratio);
             }
-            Message::KeyPressed { key, modifiers } => {
-                if let Some(msg) = self.editor.keypress(key, modifiers).map(Message::Editor) {
-                    return self.update(msg);
-                }
-            }
             Message::Loaded(result) => {
                 return self.update(Message::Editor(editor::Message::Init(result)));
             }
@@ -121,10 +111,6 @@ impl Halo {
 
     fn theme(&self) -> Theme {
         Theme::Dark
-    }
-
-    fn subscription(&self) -> Subscription<Message> {
-        keyboard::on_key_press(|key, modifiers| Some(Message::KeyPressed { key, modifiers }))
     }
 }
 
