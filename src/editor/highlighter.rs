@@ -137,10 +137,7 @@ impl iced::advanced::text::Highlighter for Highlighter {
                 } else {
                     let modifier = highlighter.style_mod_for_stack(&stack.scopes);
 
-                    Some((
-                        range,
-                        Highlight(modifier),
-                    ))
+                    Some((range, Highlight(modifier)))
                 }
             }),
         )

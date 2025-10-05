@@ -2,18 +2,18 @@ mod pipeline;
 mod primitive;
 mod uniforms;
 
+use crate::theme::Theme;
 use crate::viewer::primitive::Primitive;
 use crate::viewer::uniforms::Uniforms;
 use crate::{FragmentShader, Message};
 use iced::advanced::Shell;
 use iced::event::Status;
 use iced::widget::shader::Event;
-use iced::widget::{pane_grid, Shader};
+use iced::widget::{Shader, pane_grid};
 use iced::window::RedrawRequest;
-use iced::{mouse, Length, Point, Rectangle};
+use iced::{Length, Point, Rectangle, mouse};
 use std::sync::Arc;
 use std::time::Instant;
-use crate::theme::Theme;
 
 pub struct Viewer {
     start: Instant,

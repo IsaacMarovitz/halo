@@ -1,10 +1,10 @@
-use crate::editor::{icon, Element, Message};
 use crate::FragmentShader;
+use crate::editor::{Element, Message, icon};
+use crate::theme::ContainerClass;
 use iced::widget::tooltip;
 use naga::valid::Capabilities;
 use std::ops::Range;
 use std::sync::Arc;
-use crate::theme::ContainerClass;
 
 #[derive(Default, Debug)]
 pub enum Status {

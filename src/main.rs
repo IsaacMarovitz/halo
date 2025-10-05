@@ -10,7 +10,7 @@ use crate::viewer::Viewer;
 use iced::font::{Family, Stretch, Style, Weight};
 use iced::widget::pane_grid::Configuration;
 use iced::widget::{container, pane_grid};
-use iced::{keyboard, Element, Font, Length, Size, Subscription, Task};
+use iced::{Element, Font, Length, Size, Subscription, Task, keyboard};
 use std::sync::Arc;
 
 pub type FragmentShader = String;
@@ -141,10 +141,9 @@ impl Pane {
     ) -> pane_grid::Content<'a, Message, Theme> {
         match self {
             Self::Viewer => viewer.content(),
-            Self::Editor => pane_grid::Content::new(editor.view().map(Message::Editor))
-                .title_bar(pane_grid::TitleBar::new(
-                    editor.title_bar().map(Message::Editor),
-                )),
+            Self::Editor => pane_grid::Content::new(editor.view().map(Message::Editor)).title_bar(
+                pane_grid::TitleBar::new(editor.title_bar().map(Message::Editor)),
+            ),
         }
     }
 }

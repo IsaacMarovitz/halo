@@ -2,18 +2,20 @@ mod file;
 mod highlighter;
 mod validation;
 
+use crate::editor::highlighter::Highlighter;
 use crate::preferences::Preferences;
-use crate::{preferences, FragmentShader, JETBRAINS_MONO};
+use crate::theme::{ContainerClass, TextClass, Theme};
+use crate::{FragmentShader, JETBRAINS_MONO, preferences};
 use iced::alignment::Horizontal;
+use iced::keyboard::key::Named;
 use iced::widget::text_editor::Action;
-use iced::widget::{button, checkbox, column, container, row, scrollable, text, text_editor, tooltip};
-use iced::{keyboard, Alignment, Font, Length, Task};
+use iced::widget::{
+    button, checkbox, column, container, row, scrollable, text, text_editor, tooltip,
+};
+use iced::{Alignment, Font, Length, Task, keyboard};
 use std::ops::Range;
 use std::path::PathBuf;
 use std::sync::Arc;
-use iced::keyboard::key::Named;
-use crate::editor::highlighter::Highlighter;
-use crate::theme::{ContainerClass, TextClass, Theme};
 
 type Element<'a, Message> = iced::Element<'a, Message, Theme>;
 
@@ -66,11 +68,7 @@ impl Default for Editor {
 }
 
 impl Editor {
-    pub fn keypress(
-        &self,
-        key: keyboard::Key,
-        modifiers: keyboard::Modifiers,
-    ) -> Option<Message> {
+    pub fn keypress(&self, key: keyboard::Key, modifiers: keyboard::Modifiers) -> Option<Message> {
         match key.as_ref() {
             keyboard::Key::Named(Named::Enter) if modifiers.control() => Some(Message::Validate),
             keyboard::Key::Character("s") if modifiers.command() => Some(Message::Save),
@@ -157,12 +155,9 @@ impl Editor {
 
                     (
                         Event::None,
-                        Task::perform(
-                            file::save(self.shader_path.clone(), shader),
-                            Message::Saved,
-                        ),
+                        Task::perform(file::save(self.shader_path.clone(), shader), Message::Saved),
                     )
-                }
+                };
             }
             Message::Saved(result) => {
                 if let Ok(path) = result {
@@ -245,7 +240,7 @@ impl Editor {
                     theme: self.theme,
                     errors,
                 },
-                |highlight, _theme| highlight.to_format(),  // Note: takes theme parameter
+                |highlight, _theme| highlight.to_format(), // Note: takes theme parameter
             )
             .on_action(Message::Action);
 
@@ -263,9 +258,7 @@ impl Editor {
         )
         .align_x(Horizontal::Right);
 
-        let info = row![path, char_count]
-            .width(Length::Fill)
-            .padding([5, 10]);
+        let info = row![path, char_count].width(Length::Fill).padding([5, 10]);
 
         let content =
             if let validation::Status::Invalid(validation::Error::Parse { message, errors }) =
@@ -296,11 +289,10 @@ impl Editor {
                 container(self.validation_status.icon())
                     .width(24)
                     .center_y(24),
-                checkbox("Auto", self.auto_validate)
-                    .on_toggle(Message::AutoValidate),
+                checkbox("Auto", self.auto_validate).on_toggle(Message::AutoValidate),
             ]
             .spacing(10)
-            .align_y(Alignment::Center)
+            .align_y(Alignment::Center),
         )
         .width(Length::Fill)
         .align_x(Horizontal::Left);
@@ -346,12 +338,14 @@ fn control_button<'a>(
 pub fn icon<'a, Message: 'static>(char: char) -> Element<'a, Message> {
     const FONT: Font = Font::with_name("halo-icons");
 
-    text(char)
-        .font(FONT)
-        .into()
+    text(char).font(FONT).into()
 }
 
-fn tmp_error_view<'a>(msg: &str, errors: &[(Range<usize>, String)], shader: &str) -> Element<'a, Message> {
+fn tmp_error_view<'a>(
+    msg: &str,
+    errors: &[(Range<usize>, String)],
+    shader: &str,
+) -> Element<'a, Message> {
     let errors = errors
         .iter()
         .map(|(range, err_msg)| {
@@ -375,9 +369,10 @@ fn tmp_error_view<'a>(msg: &str, errors: &[(Range<usize>, String)], shader: &str
                 .padding([10, 20])
                 .spacing(10),
         )
-            .width(Length::Fill)
-            .height(100)
-    ).width(Length::Fill)
+        .width(Length::Fill)
+        .height(100),
+    )
+    .width(Length::Fill)
     .class(ContainerClass::Error)
     .into()
 }

@@ -1,9 +1,9 @@
 use crate::viewer::pipeline::Pipeline;
 use crate::viewer::uniforms::Uniforms;
-use iced::widget::shader::{wgpu, Storage};
 use iced::Rectangle;
-use std::sync::Arc;
 use iced::advanced::graphics::Viewport;
+use iced::widget::shader::{Storage, wgpu};
+use std::sync::Arc;
 
 #[derive(Debug)]
 pub struct Primitive {

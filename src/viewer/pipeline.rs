@@ -1,6 +1,6 @@
 use crate::viewer::uniforms;
-use iced::widget::shader::wgpu;
 use iced::Rectangle;
+use iced::widget::shader::wgpu;
 use std::borrow::Cow;
 
 pub struct Pipeline {

@@ -1,6 +1,6 @@
+use iced::advanced::graphics::Viewport;
 use iced::{Point, Rectangle};
 use std::time::Duration;
-use iced::advanced::graphics::Viewport;
 
 #[derive(Debug)]
 pub struct Uniforms {

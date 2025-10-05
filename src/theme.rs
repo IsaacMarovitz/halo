@@ -1,11 +1,11 @@
-use std::default::Default;
-use iced::widget::{button, checkbox, container, pane_grid, scrollable, text, text_editor};
-use iced::{application, Border, Color};
 use iced::application::Appearance;
 use iced::border::Radius;
 use iced::widget::button::Status;
 use iced::widget::pane_grid::Highlight;
 use iced::widget::scrollable::Rail;
+use iced::widget::{button, checkbox, container, pane_grid, scrollable, text, text_editor};
+use iced::{Border, Color, application};
+use std::default::Default;
 //const OFF_WHITE: Color = Color::from_rgb8(242, 239, 233);
 
 struct Palette {
@@ -108,7 +108,7 @@ impl container::Catalog for Theme {
                 border: Border {
                     radius: BORDER_RADIUS.into(),
                     width: BORDER_WIDTH,
-                    color: palette.base_darkest
+                    color: palette.base_darkest,
                 },
                 shadow: Default::default(),
             },
@@ -119,7 +119,7 @@ impl container::Catalog for Theme {
                 border: Border {
                     radius: Default::default(),
                     width: 0.0,
-                    color: Default::default()
+                    color: Default::default(),
                 },
                 shadow: Default::default(),
             },
@@ -129,7 +129,7 @@ impl container::Catalog for Theme {
                 border: Border {
                     radius: Default::default(),
                     width: 1.0,
-                    color: palette.error
+                    color: palette.error,
                 },
                 shadow: Default::default(),
             },
@@ -182,7 +182,7 @@ impl pane_grid::Catalog for Theme {
                     radius: Default::default(),
                     width: 0.0,
                     color: Default::default(),
-                }
+                },
             },
             picked_split: pane_grid::Line {
                 color: palette.accent_secondary,
@@ -219,7 +219,7 @@ impl button::Catalog for Theme {
                 border: Border {
                     radius: 2.0.into(),
                     width: 0.0,
-                    color: Default::default()
+                    color: Default::default(),
                 },
                 text_color: palette.text,
             },
@@ -229,7 +229,7 @@ impl button::Catalog for Theme {
                 border: Border {
                     radius: 2.0.into(),
                     width: 0.0,
-                    color: Default::default()
+                    color: Default::default(),
                 },
                 text_color: palette.text,
             },
@@ -239,7 +239,7 @@ impl button::Catalog for Theme {
                 border: Border {
                     radius: 2.0.into(),
                     width: 0.0,
-                    color: Default::default()
+                    color: Default::default(),
                 },
                 text_color: palette.text,
             },
@@ -259,7 +259,7 @@ impl checkbox::Catalog for Theme {
         let palette = self.palette();
 
         match status {
-            checkbox::Status::Active {..} => checkbox::Style {
+            checkbox::Status::Active { .. } => checkbox::Style {
                 background: palette.base.into(),
                 icon_color: palette.text,
                 border: Border {
@@ -269,7 +269,7 @@ impl checkbox::Catalog for Theme {
                 },
                 text_color: Some(palette.text),
             },
-            checkbox::Status::Hovered {..} => checkbox::Style {
+            checkbox::Status::Hovered { .. } => checkbox::Style {
                 background: palette.base_lighter.into(),
                 icon_color: palette.text,
                 border: Border {
@@ -279,7 +279,7 @@ impl checkbox::Catalog for Theme {
                 },
                 text_color: Some(palette.text),
             },
-            checkbox::Status::Disabled {..} => checkbox::Style {
+            checkbox::Status::Disabled { .. } => checkbox::Style {
                 background: palette.disabled.into(),
                 icon_color: palette.text,
                 border: Border {
@@ -351,7 +351,7 @@ impl text_editor::Catalog for Theme {
                 placeholder: palette.disabled,
                 value: palette.text,
                 selection: palette.base_lighter,
-            }
+            },
         }
     }
 }
@@ -375,14 +375,14 @@ impl scrollable::Catalog for Theme {
                     border: Border {
                         color: Color::default(),
                         width: 0.0,
-                        radius: Radius::default()
-                    }
+                        radius: Radius::default(),
+                    },
                 },
                 border: Border {
                     color: Color::default(),
                     width: 0.0,
                     radius: Radius::default(),
-                }
+                },
             },
             horizontal_rail: Rail {
                 background: Some(palette.base_darker.into()),
@@ -391,14 +391,14 @@ impl scrollable::Catalog for Theme {
                     border: Border {
                         color: Color::default(),
                         width: 0.0,
-                        radius: Radius::default()
-                    }
+                        radius: Radius::default(),
+                    },
                 },
                 border: Border {
                     color: Color::default(),
                     width: 0.0,
                     radius: Radius::default(),
-                }
+                },
             },
             gap: None,
         }
