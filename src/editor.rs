@@ -242,7 +242,7 @@ impl Editor {
             .padding(10)
             .highlight_with::<Highlighter>(
                 highlighter::Settings {
-                    theme: iced::highlighter::Theme::Base16Mocha,
+                    theme: self.theme,
                     errors,
                 },
                 |highlight, _theme| highlight.to_format(),  // Note: takes theme parameter
@@ -295,8 +295,7 @@ impl Editor {
             row![
                 container(self.validation_status.icon())
                     .width(24)
-                    .height(24)
-                    .center_y(0),
+                    .center_y(24),
                 checkbox("Auto", self.auto_validate)
                     .on_toggle(Message::AutoValidate),
             ]
@@ -335,7 +334,7 @@ fn control_button<'a>(
     label: &'a str,
     on_press: Message,
 ) -> Element<'a, Message> {
-    let button = button(container(content).width(30).center_x(0));
+    let button = button(container(content).center_x(30));
 
     tooltip(button.on_press(on_press), label, tooltip::Position::Bottom)
         .padding(10)
