@@ -8,12 +8,10 @@ use crate::editor::{Editor, Event};
 use crate::preferences::Preferences;
 use crate::theme::Theme;
 use crate::viewer::Viewer;
-use crate::widget::pane_grid::PaneGrid;
-use crate::widget::Element;
 use iced::font::{Family, Stretch, Style, Weight};
 use iced::widget::pane_grid::Configuration;
 use iced::widget::{container, pane_grid};
-use iced::{executor, keyboard, window, Application, Command, Font, Length, Subscription};
+use iced::{keyboard, Element, Font, Length, Size, Subscription, Task};
 use std::sync::Arc;
 
 pub type FragmentShader = String;
@@ -28,20 +26,14 @@ const JETBRAINS_MONO: Font = Font {
 };
 
 fn main() -> iced::Result {
-    Halo::run(iced::Settings {
-        fonts: vec![
-            include_bytes!("../fonts/JetBrainsMono-Regular.ttf")
-                .as_slice()
-                .into(),
-            include_bytes!("../fonts/halo-icons.ttf").as_slice().into(),
-        ],
-        window: window::Settings {
-            size: (1600, 900),
-            ..Default::default()
-        },
-        default_font: Font::MONOSPACE,
-        ..Default::default()
-    })
+    iced::application(Halo::title, Halo::update, Halo::view)
+        .theme(Halo::theme)
+        .subscription(Halo::subscription)
+        .font(include_bytes!("../fonts/JetBrainsMono-Regular.ttf").as_slice())
+        .font(include_bytes!("../fonts/halo-icons.ttf").as_slice())
+        .default_font(Font::MONOSPACE)
+        .window_size(Size::new(1600.0, 900.0))
+        .run_with(|| Halo::new(()))
 }
 
 struct Halo {
@@ -56,19 +48,14 @@ enum Message {
     PaneResized(pane_grid::ResizeEvent),
     Editor(editor::Message),
     KeyPressed {
-        key: keyboard::KeyCode,
+        key: keyboard::Key,
         modifiers: keyboard::Modifiers,
     },
     Loaded(Result<(Preferences, Arc<FragmentShader>), preferences::Error>),
 }
 
-impl Application for Halo {
-    type Executor = executor::Default;
-    type Message = Message;
-    type Theme = Theme;
-    type Flags = ();
-
-    fn new(_flags: Self::Flags) -> (Self, Command<Self::Message>) {
+impl Halo {
+    fn new(_flags: ()) -> (Self, Task<Message>) {
         (
             //TODO save settings
             Self {
@@ -82,7 +69,7 @@ impl Application for Halo {
                 }),
             },
             //TODO load last shader file from settings
-            Command::perform(preferences::load(), Message::Loaded),
+            Task::perform(preferences::load(), Message::Loaded),
         )
     }
 
@@ -90,7 +77,7 @@ impl Application for Halo {
         HALO.to_string()
     }
 
-    fn update(&mut self, message: Self::Message) -> Command<Self::Message> {
+    fn update(&mut self, message: Message) -> Task<Message> {
         match message {
             Message::Editor(msg) => {
                 let (event, cmd) = self.editor.update(msg);
@@ -118,11 +105,11 @@ impl Application for Halo {
             }
         }
 
-        Command::none()
+        Task::none()
     }
 
-    fn view(&self) -> Element<Message> {
-        let panes = PaneGrid::new(&self.panes, |_id, pane, _is_maximized| {
+    fn view(&self) -> Element<Message, Theme> {
+        let panes = pane_grid(&self.panes, |_id, pane, _is_maximized| {
             pane.view(&self.editor, &self.viewer).into()
         })
         .on_resize(10, Message::PaneResized);
@@ -133,11 +120,11 @@ impl Application for Halo {
             .into()
     }
 
-    fn theme(&self) -> Self::Theme {
+    fn theme(&self) -> Theme {
         Theme::Dark
     }
 
-    fn subscription(&self) -> Subscription<Self::Message> {
+    fn subscription(&self) -> Subscription<Message> {
         keyboard::on_key_press(|key, modifiers| Some(Message::KeyPressed { key, modifiers }))
     }
 }
@@ -152,11 +139,11 @@ impl Pane {
         &'a self,
         editor: &'a Editor,
         viewer: &'a Viewer,
-    ) -> widget::pane_grid::Content<Message> {
+    ) -> pane_grid::Content<'a, Message, Theme> {
         match self {
             Self::Viewer => viewer.content(),
-            Self::Editor => widget::pane_grid::Content::new(editor.view().map(Message::Editor))
-                .title_bar(widget::pane_grid::TitleBar::new(
+            Self::Editor => pane_grid::Content::new(editor.view().map(Message::Editor))
+                .title_bar(pane_grid::TitleBar::new(
                     editor.title_bar().map(Message::Editor),
                 )),
         }

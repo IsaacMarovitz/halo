@@ -1,6 +1,6 @@
-use iced::widget::shader::Transformation;
 use iced::{Point, Rectangle};
 use std::time::Duration;
+use iced::advanced::graphics::Viewport;
 
 #[derive(Debug)]
 pub struct Uniforms {
@@ -9,9 +9,13 @@ pub struct Uniforms {
     pub bounds: Rectangle,
 }
 impl Uniforms {
-    pub fn to_raw(&self, scale_factor: f32, transform: Transformation) -> Raw {
+    pub fn to_raw(&self, viewport: &Viewport) -> Raw {
+        let scale_factor = viewport.scale_factor() as f32;
+        let transform_array: [f32; 16] = viewport.projection().into();
+        let transform_matrix = glam::Mat4::from_cols_array(&transform_array);
+
         Raw {
-            transform: transform.into(),
+            transform: transform_matrix,
             position: [self.bounds.x * scale_factor, self.bounds.y * scale_factor],
             scale: [
                 self.bounds.width * scale_factor,

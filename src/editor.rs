@@ -2,18 +2,20 @@ mod file;
 mod highlighter;
 mod validation;
 
-use crate::editor::highlighter::Highlighter;
 use crate::preferences::Preferences;
-use crate::widget::text_editor::TextEditor;
-use crate::widget::{text_editor, Element};
-use crate::{preferences, theme, FragmentShader, JETBRAINS_MONO};
+use crate::{preferences, FragmentShader, JETBRAINS_MONO};
 use iced::alignment::Horizontal;
 use iced::widget::text_editor::Action;
-use iced::widget::{button, checkbox, column, container, row, scrollable, text, tooltip};
-use iced::{alignment, keyboard, Alignment, Command, Font, Length};
+use iced::widget::{button, checkbox, column, container, row, scrollable, text, text_editor, tooltip};
+use iced::{keyboard, Alignment, Font, Length, Task};
 use std::ops::Range;
 use std::path::PathBuf;
 use std::sync::Arc;
+use iced::keyboard::key::Named;
+use crate::editor::highlighter::Highlighter;
+use crate::theme::{ContainerClass, TextClass, Theme};
+
+type Element<'a, Message> = iced::Element<'a, Message, Theme>;
 
 #[derive(Clone, Debug)]
 pub enum Message {
@@ -66,21 +68,21 @@ impl Default for Editor {
 impl Editor {
     pub fn keypress(
         &self,
-        key: keyboard::KeyCode,
+        key: keyboard::Key,
         modifiers: keyboard::Modifiers,
     ) -> Option<Message> {
-        match key {
-            keyboard::KeyCode::Enter if modifiers.control() => Some(Message::Validate),
-            keyboard::KeyCode::S if modifiers.command() => Some(Message::Save),
-            keyboard::KeyCode::Z if modifiers.command() => Some(Message::Undo),
-            keyboard::KeyCode::Y if modifiers.command() => Some(Message::Redo),
-            keyboard::KeyCode::F if modifiers.command() => Some(Message::Search),
-            keyboard::KeyCode::Tab => Some(Message::Indent),
+        match key.as_ref() {
+            keyboard::Key::Named(Named::Enter) if modifiers.control() => Some(Message::Validate),
+            keyboard::Key::Character("s") if modifiers.command() => Some(Message::Save),
+            keyboard::Key::Character("z") if modifiers.command() => Some(Message::Undo),
+            keyboard::Key::Character("y") if modifiers.command() => Some(Message::Redo),
+            keyboard::Key::Character("f") if modifiers.command() => Some(Message::Search),
+            keyboard::Key::Named(Named::Tab) => Some(Message::Indent),
             _ => None,
         }
     }
 
-    pub fn update(&mut self, update: Message) -> (Event, Command<Message>) {
+    pub fn update(&mut self, update: Message) -> (Event, Task<Message>) {
         match update {
             Message::Init(result) => {
                 let cmd = match result {
@@ -88,11 +90,11 @@ impl Editor {
                         self.auto_validate = prefs.auto_validate;
                         self.shader_path = prefs.last_shader_path;
                         self.content = text_editor::Content::with_text(&shader);
-                        Command::perform(validation::validate(shader), Message::Validated)
+                        Task::perform(validation::validate(shader), Message::Validated)
                     }
                     Err(e) => {
                         println!("Error loading prefs: {e:?}");
-                        Command::none()
+                        Task::none()
                     }
                 };
 
@@ -116,15 +118,15 @@ impl Editor {
 
                 return (
                     Event::UpdatePipeline(Arc::new(empty_shader.to_string())),
-                    Command::none(),
+                    Task::none(),
                 );
             }
             Message::Open => {
                 let cmd = if self.is_loading {
-                    Command::none()
+                    Task::none()
                 } else {
                     self.is_loading = true;
-                    Command::perform(file::open(), Message::Opened)
+                    Task::perform(file::open(), Message::Opened)
                 };
 
                 return (Event::None, cmd);
@@ -134,12 +136,12 @@ impl Editor {
                     self.shader_path = Some(path);
                     self.content = text_editor::Content::with_text(&shader);
 
-                    Command::batch(vec![
+                    Task::batch(vec![
                         self.save_prefs(),
-                        Command::perform(validation::validate(shader), Message::Validated),
+                        Task::perform(validation::validate(shader), Message::Validated),
                     ])
                 } else {
-                    Command::none()
+                    Task::none()
                 };
 
                 //TODO loading error msg
@@ -149,13 +151,13 @@ impl Editor {
             }
             Message::Save => {
                 return if self.is_loading {
-                    (Event::None, Command::none())
+                    (Event::None, Task::none())
                 } else {
                     let shader = self.content.text();
 
                     (
                         Event::None,
-                        Command::perform(
+                        Task::perform(
                             file::save(self.shader_path.clone(), shader),
                             Message::Saved,
                         ),
@@ -175,13 +177,13 @@ impl Editor {
 
                 return (
                     Event::None,
-                    Command::perform(validation::validate(shader), Message::Validated),
+                    Task::perform(validation::validate(shader), Message::Validated),
                 );
             }
             Message::Validated(result) => match result {
                 Ok(shader) => {
                     self.validation_status = validation::Status::Validated;
-                    return (Event::UpdatePipeline(shader), Command::none());
+                    return (Event::UpdatePipeline(shader), Task::none());
                 }
                 Err(error) => {
                     println!("Invalid: {error:?}");
@@ -209,16 +211,16 @@ impl Editor {
             }
         }
 
-        (Event::None, Command::none())
+        (Event::None, Task::none())
     }
 
-    fn save_prefs(&self) -> Command<Message> {
+    fn save_prefs(&self) -> Task<Message> {
         let prefs = Preferences {
             last_shader_path: self.shader_path.clone(),
             auto_validate: self.auto_validate,
         };
 
-        Command::perform(preferences::save(prefs), Message::PreferencesSaved)
+        Task::perform(preferences::save(prefs), Message::PreferencesSaved)
     }
 
     pub fn view(&self) -> Element<Message> {
@@ -235,15 +237,15 @@ impl Editor {
                 vec![]
             };
 
-        let text_editor = TextEditor::new(&self.content)
+        let text_editor = text_editor(&self.content)
             .font(JETBRAINS_MONO)
             .padding(10)
-            .highlight::<Highlighter>(
+            .highlight_with::<Highlighter>(
                 highlighter::Settings {
                     theme: iced::highlighter::Theme::Base16Mocha,
                     errors,
                 },
-                |highlight, _theme| highlight.to_format(),
+                |highlight, _theme| highlight.to_format(),  // Note: takes theme parameter
             )
             .on_action(Message::Action);
 
@@ -263,7 +265,7 @@ impl Editor {
 
         let info = row![path, char_count]
             .width(Length::Fill)
-            .padding([5, 10, 5, 10]);
+            .padding([5, 10]);
 
         let content =
             if let validation::Status::Invalid(validation::Error::Parse { message, errors }) =
@@ -294,14 +296,15 @@ impl Editor {
                 container(self.validation_status.icon())
                     .width(24)
                     .height(24)
-                    .center_y(),
-                checkbox("Auto", self.auto_validate, Message::AutoValidate),
+                    .center_y(0),
+                checkbox("Auto", self.auto_validate)
+                    .on_toggle(Message::AutoValidate),
             ]
             .spacing(10)
-            .align_items(Alignment::Center),
+            .align_y(Alignment::Center)
         )
         .width(Length::Fill)
-        .align_x(alignment::Horizontal::Left);
+        .align_x(Horizontal::Left);
 
         let file_controls = container(
             row![
@@ -310,19 +313,19 @@ impl Editor {
                 control_button(save_icon, "Save current shader", Message::Save),
             ]
             .spacing(10)
-            .align_items(Alignment::Center),
+            .align_y(Alignment::Center),
         )
         .width(Length::Fill)
-        .align_x(alignment::Horizontal::Right);
+        .align_x(Horizontal::Right);
 
         container(
             row![validation_controls, file_controls]
                 .width(Length::Fill)
-                .padding([10, 15, 10, 15])
-                .align_items(Alignment::Center),
+                .padding([10, 15])
+                .align_y(Alignment::Center),
         )
         .width(Length::Fill)
-        .style(theme::Container::Controls)
+        .class(ContainerClass::Controls)
         .into()
     }
 }
@@ -332,11 +335,11 @@ fn control_button<'a>(
     label: &'a str,
     on_press: Message,
 ) -> Element<'a, Message> {
-    let button = button(container(content).width(30).center_x());
+    let button = button(container(content).width(30).center_x(0));
 
     tooltip(button.on_press(on_press), label, tooltip::Position::Bottom)
         .padding(10)
-        .style(theme::Container::Tooltip)
+        .class(ContainerClass::Tooltip)
         .into()
 }
 
@@ -344,7 +347,9 @@ fn control_button<'a>(
 pub fn icon<'a, Message: 'static>(char: char) -> Element<'a, Message> {
     const FONT: Font = Font::with_name("halo-icons");
 
-    text(char).font(FONT).into()
+    text(char)
+        .font(FONT)
+        .into()
 }
 
 fn tmp_error_view<'a>(msg: &str, errors: &[(Range<usize>, String)], shader: &str) -> Element<'a, Message> {
@@ -358,7 +363,7 @@ fn tmp_error_view<'a>(msg: &str, errors: &[(Range<usize>, String)], shader: &str
             } else {
                 text(format!("{msg}:\n    {err_msg}"))
             }
-            .style(theme::Text::Error)
+            .class(TextClass::Error)
             .size(14)
             .into()
         })
@@ -368,12 +373,12 @@ fn tmp_error_view<'a>(msg: &str, errors: &[(Range<usize>, String)], shader: &str
         scrollable(
             column(errors)
                 .width(Length::Fill)
-                .padding([10, 20, 10, 20])
+                .padding([10, 20])
                 .spacing(10),
         )
             .width(Length::Fill)
             .height(100)
     ).width(Length::Fill)
-    .style(theme::Container::Error)
+    .class(ContainerClass::Error)
     .into()
 }

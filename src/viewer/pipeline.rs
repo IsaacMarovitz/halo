@@ -19,7 +19,7 @@ impl Pipeline {
     ) -> Self {
         let uniforms = device.create_buffer(&wgpu::BufferDescriptor {
             label: Some("halo.pipeline.uniforms"),
-            size: std::mem::size_of::<uniforms::Raw>() as u64,
+            size: size_of::<uniforms::Raw>() as u64,
             usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
             mapped_at_creation: false,
         });
@@ -108,7 +108,7 @@ impl Pipeline {
         &self,
         encoder: &mut wgpu::CommandEncoder,
         target: &wgpu::TextureView,
-        bounds: Rectangle<u32>,
+        bounds: &Rectangle<u32>,
     ) {
         let mut pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
             label: Some("halo.render_pass"),

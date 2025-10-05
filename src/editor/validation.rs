@@ -1,11 +1,10 @@
-use crate::editor::{icon, Message};
-use crate::widget::Element;
-use crate::{theme, FragmentShader};
+use crate::editor::{icon, Element, Message};
+use crate::FragmentShader;
 use iced::widget::tooltip;
 use naga::valid::Capabilities;
-use std::fmt::Formatter;
 use std::ops::Range;
 use std::sync::Arc;
+use crate::theme::ContainerClass;
 
 #[derive(Default, Debug)]
 pub enum Status {
@@ -14,19 +13,6 @@ pub enum Status {
     Validating,
     Invalid(Error),
     NeedsValidation,
-}
-
-impl std::fmt::Display for Status {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        let str = match self {
-            Status::Validated => "Shader is valid",
-            Status::Validating => "Shader is being validated",
-            Status::Invalid(_) => "Shader is invalid!",
-            Status::NeedsValidation => "Shader needs validation!",
-        };
-
-        write!(f, "{str}")
-    }
 }
 
 impl Status {
@@ -39,9 +25,16 @@ impl Status {
             Status::NeedsValidation => icon('\u{e803}'),
         };
 
-        tooltip(icon, self.to_string(), tooltip::Position::Bottom)
+        let label = match self {
+            Status::Validated => "Shader is valid",
+            Status::Validating => "Shader is being validated",
+            Status::Invalid(_) => "Shader is invalid!",
+            Status::NeedsValidation => "Shader needs validation!",
+        };
+
+        tooltip(icon, label, tooltip::Position::Bottom)
             .padding(10)
-            .style(theme::Container::Tooltip)
+            .class(ContainerClass::Tooltip)
             .into()
     }
 }

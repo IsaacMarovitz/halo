@@ -4,16 +4,18 @@ mod uniforms;
 
 use crate::viewer::primitive::Primitive;
 use crate::viewer::uniforms::Uniforms;
-use crate::{widget, FragmentShader, Message};
+use crate::{FragmentShader, Message};
 use iced::advanced::Shell;
 use iced::event::Status;
 use iced::widget::shader::Event;
-use iced::widget::Shader;
+use iced::widget::{pane_grid, Shader};
 use iced::window::RedrawRequest;
 use iced::{mouse, Length, Point, Rectangle};
 use std::sync::Arc;
 use std::time::Instant;
-use widget::pane_grid;
+use crate::theme::Theme;
+
+type Element<'a, Message> = iced::Element<'a, Message, Theme>;
 
 pub struct Viewer {
     start: Instant,
@@ -34,7 +36,7 @@ impl Default for Viewer {
 }
 
 impl Viewer {
-    pub fn content(&self) -> pane_grid::Content<Message> {
+    pub fn content(&self) -> pane_grid::Content<Message, Theme> {
         Shader::new(self)
             .width(Length::Fill)
             .height(Length::Fill)

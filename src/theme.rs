@@ -1,6 +1,11 @@
+use std::default::Default;
 use iced::widget::{button, checkbox, container, pane_grid, scrollable, text, text_editor};
-use iced::{application, Color};
-
+use iced::{application, Border, Color};
+use iced::application::Appearance;
+use iced::border::Radius;
+use iced::widget::button::Status;
+use iced::widget::pane_grid::Highlight;
+use iced::widget::scrollable::Rail;
 //const OFF_WHITE: Color = Color::from_rgb8(242, 239, 233);
 
 struct Palette {
@@ -66,24 +71,19 @@ impl Theme {
     }
 }
 
-#[derive(Default)]
-pub struct Application;
-
-impl application::StyleSheet for Theme {
-    type Style = Application;
-
-    fn appearance(&self, _style: &Self::Style) -> application::Appearance {
+impl application::DefaultStyle for Theme {
+    fn default_style(&self) -> Appearance {
         let palette = self.palette();
 
-        application::Appearance {
+        Appearance {
             background_color: palette.background,
             text_color: palette.text,
         }
     }
 }
 
-#[derive(Default)]
-pub enum Container {
+#[derive(Default, Clone, Copy)]
+pub enum ContainerClass {
     Tooltip,
     Controls,
     Error,
@@ -91,248 +91,316 @@ pub enum Container {
     None,
 }
 
-impl container::StyleSheet for Theme {
-    type Style = Container;
+impl container::Catalog for Theme {
+    type Class<'a> = ContainerClass;
 
-    fn appearance(&self, style: &Self::Style) -> container::Appearance {
+    fn default<'a>() -> Self::Class<'a> {
+        ContainerClass::None
+    }
+
+    fn style(&self, class: &Self::Class<'_>) -> container::Style {
         let palette = self.palette();
 
-        match style {
-            Container::Tooltip => container::Appearance {
+        match class {
+            ContainerClass::Tooltip => container::Style {
                 text_color: Some(palette.text),
                 background: Some(palette.base_darker.into()),
-                border_radius: BORDER_RADIUS.into(),
-                border_width: BORDER_WIDTH,
-                border_color: palette.base_darkest,
+                border: Border {
+                    radius: BORDER_RADIUS.into(),
+                    width: BORDER_WIDTH,
+                    color: palette.base_darkest
+                },
+                shadow: Default::default(),
             },
-            Container::None => container::Appearance::default(),
-            Container::Controls => container::Appearance {
+            ContainerClass::None => container::Style::default(),
+            ContainerClass::Controls => container::Style {
                 text_color: Some(palette.text),
                 background: Some(palette.base_darkest.into()),
-                border_radius: Default::default(),
-                border_width: 0.0,
-                border_color: Default::default(),
+                border: Border {
+                    radius: Default::default(),
+                    width: 0.0,
+                    color: Default::default()
+                },
+                shadow: Default::default(),
             },
-            Container::Error => container::Appearance {
+            ContainerClass::Error => container::Style {
                 text_color: Some(palette.error),
                 background: Some(palette.base_darkest.into()),
-                border_radius: Default::default(),
-                border_width: 1.0,
-                border_color: palette.error,
+                border: Border {
+                    radius: Default::default(),
+                    width: 1.0,
+                    color: palette.error
+                },
+                shadow: Default::default(),
             },
         }
     }
 }
 
 #[derive(Default, Clone)]
-pub enum Text {
+pub enum TextClass {
     #[default]
     Primary,
     Error,
 }
 
-impl text::StyleSheet for Theme {
-    type Style = Text;
+impl text::Catalog for Theme {
+    type Class<'a> = TextClass;
 
-    fn appearance(&self, style: Self::Style) -> text::Appearance {
+    fn default<'a>() -> Self::Class<'a> {
+        TextClass::Primary
+    }
+
+    fn style(&self, class: &Self::Class<'_>) -> text::Style {
         let palette = self.palette();
 
-        match style {
-            Text::Primary => text::Appearance {
+        match class {
+            TextClass::Primary => text::Style {
                 color: Some(palette.text),
             },
-            Text::Error => text::Appearance {
+            TextClass::Error => text::Style {
                 color: Some(palette.error),
             },
         }
     }
 }
 
-#[derive(Default, Clone)]
-pub struct PaneGrid;
+impl pane_grid::Catalog for Theme {
+    type Class<'a> = ();
 
-impl pane_grid::StyleSheet for Theme {
-    type Style = PaneGrid;
+    fn default<'a>() -> <Self as pane_grid::Catalog>::Class<'a> {
+        ()
+    }
 
-    fn hovered_region(&self, _style: &Self::Style) -> pane_grid::Appearance {
+    fn style(&self, _class: &<Self as pane_grid::Catalog>::Class<'_>) -> pane_grid::Style {
         let palette = self.palette();
 
-        pane_grid::Appearance {
-            background: palette.background.into(),
-            border_width: 0.0,
-            border_color: Default::default(),
-            border_radius: Default::default(),
+        pane_grid::Style {
+            hovered_region: Highlight {
+                background: palette.background.into(),
+                border: Border {
+                    radius: Default::default(),
+                    width: 0.0,
+                    color: Default::default(),
+                }
+            },
+            picked_split: pane_grid::Line {
+                color: palette.accent_secondary,
+                width: 5.0,
+            },
+            hovered_split: pane_grid::Line {
+                color: palette.accent,
+                width: 5.0,
+            },
         }
-    }
-
-    fn picked_split(&self, _style: &Self::Style) -> Option<pane_grid::Line> {
-        let palette = self.palette();
-
-        Some(pane_grid::Line {
-            color: palette.accent_secondary,
-            width: 5.0,
-        })
-    }
-
-    fn hovered_split(&self, _style: &Self::Style) -> Option<pane_grid::Line> {
-        let palette = self.palette();
-
-        Some(pane_grid::Line {
-            color: palette.accent,
-            width: 5.0,
-        })
     }
 }
 
 #[derive(Default)]
-pub enum Button {
+pub enum ButtonClass {
     #[default]
     Control,
 }
 
-impl button::StyleSheet for Theme {
-    type Style = Button;
+impl button::Catalog for Theme {
+    type Class<'a> = ButtonClass;
 
-    fn active(&self, _style: &Self::Style) -> button::Appearance {
-        let palette = self.palette();
-
-        button::Appearance {
-            shadow_offset: Default::default(),
-            background: Some(palette.base.into()),
-            border_radius: 2.0.into(),
-            border_width: 0.0,
-            border_color: Default::default(),
-            text_color: palette.text,
-        }
+    fn default<'a>() -> Self::Class<'a> {
+        ButtonClass::Control
     }
 
-    fn hovered(&self, _style: &Self::Style) -> button::Appearance {
+    fn style(&self, _class: &Self::Class<'_>, status: Status) -> button::Style {
         let palette = self.palette();
 
-        button::Appearance {
-            shadow_offset: Default::default(),
-            background: Some(palette.base_lighter.into()),
-            border_radius: 2.0.into(),
-            border_width: 0.0,
-            border_color: Default::default(),
-            text_color: palette.text,
-        }
-    }
-
-    fn pressed(&self, style: &Self::Style) -> button::Appearance {
-        self.hovered(style)
-    }
-}
-
-#[derive(Default)]
-pub struct Checkbox;
-
-impl checkbox::StyleSheet for Theme {
-    type Style = Checkbox;
-
-    fn active(&self, _style: &Self::Style, _is_checked: bool) -> checkbox::Appearance {
-        let palette = self.palette();
-
-        checkbox::Appearance {
-            background: palette.base.into(),
-            icon_color: palette.text,
-            border_radius: 2.0.into(),
-            border_width: 0.0,
-            border_color: Default::default(),
-            text_color: Some(palette.text),
-        }
-    }
-
-    fn hovered(&self, _style: &Self::Style, _is_checked: bool) -> checkbox::Appearance {
-        let palette = self.palette();
-
-        checkbox::Appearance {
-            background: palette.base_lighter.into(),
-            icon_color: palette.text,
-            border_radius: 2.0.into(),
-            border_width: 0.0,
-            border_color: Default::default(),
-            text_color: Some(palette.text),
+        match status {
+            Status::Active => button::Style {
+                shadow: Default::default(),
+                background: Some(palette.base.into()),
+                border: Border {
+                    radius: 2.0.into(),
+                    width: 0.0,
+                    color: Default::default()
+                },
+                text_color: palette.text,
+            },
+            Status::Hovered => button::Style {
+                shadow: Default::default(),
+                background: Some(palette.base_lighter.into()),
+                border: Border {
+                    radius: 2.0.into(),
+                    width: 0.0,
+                    color: Default::default()
+                },
+                text_color: palette.text,
+            },
+            Status::Pressed => button::Style {
+                shadow: Default::default(),
+                background: Some(palette.base_lighter.into()),
+                border: Border {
+                    radius: 2.0.into(),
+                    width: 0.0,
+                    color: Default::default()
+                },
+                text_color: palette.text,
+            },
+            Status::Disabled => Default::default(),
         }
     }
 }
 
-#[derive(Default)]
-pub struct Editor;
+impl checkbox::Catalog for Theme {
+    type Class<'a> = ();
 
-impl text_editor::StyleSheet for Theme {
-    type Style = Editor;
+    fn default<'a>() -> Self::Class<'a> {
+        ()
+    }
 
-    fn active(&self, _style: &Self::Style) -> text_editor::Appearance {
+    fn style(&self, _class: &Self::Class<'_>, status: checkbox::Status) -> checkbox::Style {
         let palette = self.palette();
 
-        text_editor::Appearance {
-            background: palette.background.into(),
-            border_radius: Default::default(),
-            border_width: 0.0,
-            border_color: Default::default(),
-        }
-    }
-
-    fn focused(&self, _style: &Self::Style) -> text_editor::Appearance {
-        text_editor::Appearance {
-            background: self.palette().background.into(),
-            border_radius: Default::default(),
-            border_width: 0.0,
-            border_color: Default::default(),
-        }
-    }
-
-    fn placeholder_color(&self, _style: &Self::Style) -> Color {
-        self.palette().disabled
-    }
-
-    fn value_color(&self, _style: &Self::Style) -> Color {
-        self.palette().text
-    }
-
-    fn disabled_color(&self, _style: &Self::Style) -> Color {
-        self.palette().disabled
-    }
-
-    fn selection_color(&self, _style: &Self::Style) -> Color {
-        self.palette().base_darker
-    }
-
-    fn disabled(&self, _style: &Self::Style) -> text_editor::Appearance {
-        text_editor::Appearance {
-            background: Color::TRANSPARENT.into(),
-            border_radius: Default::default(),
-            border_width: 0.0,
-            border_color: Default::default(),
-        }
-    }
-}
-
-#[derive(Default)]
-pub struct Scrollable;
-
-impl scrollable::StyleSheet for Theme {
-    type Style = Scrollable;
-
-    fn active(&self, _style: &Self::Style) -> scrollable::Scrollbar {
-        let palette = self.palette();
-
-        scrollable::Scrollbar {
-            background: Some(palette.base_darker.into()),
-            border_radius: BORDER_RADIUS.into(),
-            border_width: 0.0,
-            border_color: Default::default(),
-            scroller: scrollable::Scroller {
-                color: palette.error,
-                border_radius: Default::default(),
-                border_width: 0.0,
-                border_color: Default::default(),
+        match status {
+            checkbox::Status::Active {..} => checkbox::Style {
+                background: palette.base.into(),
+                icon_color: palette.text,
+                border: Border {
+                    radius: 2.0.into(),
+                    width: 0.0,
+                    color: Default::default(),
+                },
+                text_color: Some(palette.text),
+            },
+            checkbox::Status::Hovered {..} => checkbox::Style {
+                background: palette.base_lighter.into(),
+                icon_color: palette.text,
+                border: Border {
+                    radius: 2.0.into(),
+                    width: 0.0,
+                    color: Default::default(),
+                },
+                text_color: Some(palette.text),
+            },
+            checkbox::Status::Disabled {..} => checkbox::Style {
+                background: palette.disabled.into(),
+                icon_color: palette.text,
+                border: Border {
+                    radius: 2.0.into(),
+                    width: 0.0,
+                    color: Default::default(),
+                },
+                text_color: Some(palette.text),
             },
         }
     }
+}
 
-    fn hovered(&self, style: &Self::Style, _is_mouse_over_scrollbar: bool) -> scrollable::Scrollbar {
-        self.active(style)
+impl text_editor::Catalog for Theme {
+    type Class<'a> = ();
+
+    fn default<'a>() -> Self::Class<'a> {
+        ()
+    }
+
+    fn style(&self, _class: &Self::Class<'_>, status: text_editor::Status) -> text_editor::Style {
+        let palette = self.palette();
+
+        match status {
+            text_editor::Status::Active => text_editor::Style {
+                background: palette.background.into(),
+                border: Border {
+                    radius: Default::default(),
+                    width: 0.0,
+                    color: Default::default(),
+                },
+                icon: palette.text,
+                placeholder: palette.disabled,
+                value: palette.text,
+                selection: palette.base_lighter,
+            },
+            text_editor::Status::Hovered => text_editor::Style {
+                background: palette.background.into(),
+                border: Border {
+                    radius: Default::default(),
+                    width: 0.0,
+                    color: Default::default(),
+                },
+                icon: palette.text,
+                placeholder: palette.disabled,
+                value: palette.text,
+                selection: palette.base_lighter,
+            },
+            text_editor::Status::Focused => text_editor::Style {
+                background: self.palette().background.into(),
+                border: Border {
+                    radius: Default::default(),
+                    width: 0.0,
+                    color: Default::default(),
+                },
+                icon: palette.text,
+                placeholder: palette.disabled,
+                value: palette.text,
+                selection: palette.base_lighter,
+            },
+            text_editor::Status::Disabled => text_editor::Style {
+                background: Color::TRANSPARENT.into(),
+                border: Border {
+                    radius: Default::default(),
+                    width: 0.0,
+                    color: Default::default(),
+                },
+                icon: palette.text,
+                placeholder: palette.disabled,
+                value: palette.text,
+                selection: palette.base_lighter,
+            }
+        }
+    }
+}
+
+impl scrollable::Catalog for Theme {
+    type Class<'a> = ();
+
+    fn default<'a>() -> Self::Class<'a> {
+        ()
+    }
+
+    fn style(&self, _class: &Self::Class<'_>, _status: scrollable::Status) -> scrollable::Style {
+        let palette = self.palette();
+
+        scrollable::Style {
+            container: Default::default(),
+            vertical_rail: Rail {
+                background: Some(palette.base_darker.into()),
+                scroller: scrollable::Scroller {
+                    color: palette.error,
+                    border: Border {
+                        color: Color::default(),
+                        width: 0.0,
+                        radius: Radius::default()
+                    }
+                },
+                border: Border {
+                    color: Color::default(),
+                    width: 0.0,
+                    radius: Radius::default(),
+                }
+            },
+            horizontal_rail: Rail {
+                background: Some(palette.base_darker.into()),
+                scroller: scrollable::Scroller {
+                    color: palette.error,
+                    border: Border {
+                        color: Color::default(),
+                        width: 0.0,
+                        radius: Radius::default()
+                    }
+                },
+                border: Border {
+                    color: Color::default(),
+                    width: 0.0,
+                    radius: Radius::default(),
+                }
+            },
+            gap: None,
+        }
     }
 }
