@@ -15,8 +15,6 @@ use std::sync::Arc;
 use std::time::Instant;
 use crate::theme::Theme;
 
-type Element<'a, Message> = iced::Element<'a, Message, Theme>;
-
 pub struct Viewer {
     start: Instant,
     pub last_valid_shader: Arc<FragmentShader>,
@@ -36,7 +34,7 @@ impl Default for Viewer {
 }
 
 impl Viewer {
-    pub fn content(&self) -> pane_grid::Content<Message, Theme> {
+    pub fn content(&'_ self) -> pane_grid::Content<'_, Message, Theme> {
         Shader::new(self)
             .width(Length::Fill)
             .height(Length::Fill)

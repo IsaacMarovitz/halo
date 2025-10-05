@@ -129,7 +129,7 @@ impl iced::advanced::text::Highlighter for Highlighter {
                 index: 0,
                 last_str_index: 0,
             }
-            .filter_map(move |(index, range, scope)| {
+            .filter_map(move |(_index, range, scope)| {
                 let _ = stack.apply(&scope);
 
                 if range.is_empty() {
@@ -139,7 +139,7 @@ impl iced::advanced::text::Highlighter for Highlighter {
 
                     Some((
                         range,
-                        Highlight(highlighter.style_mod_for_stack(&stack.scopes)),
+                        Highlight(modifier),
                     ))
                 }
             }),

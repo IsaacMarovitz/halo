@@ -62,7 +62,7 @@ pub enum Theme {
 }
 
 impl Theme {
-    pub fn palette(&self) -> Palette {
+    fn palette(&self) -> Palette {
         match self {
             //TODO light palette
             Theme::Light => Palette::default(),

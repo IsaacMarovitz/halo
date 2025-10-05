@@ -16,7 +16,7 @@ pub enum Status {
 }
 
 impl Status {
-    pub fn icon(&self) -> Element<Message> {
+    pub fn icon(&'_ self) -> Element<'_, Message> {
         //TODO colors
         let icon = match self {
             Status::Validated => icon('\u{e801}'),

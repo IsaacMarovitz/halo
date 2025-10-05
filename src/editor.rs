@@ -223,14 +223,14 @@ impl Editor {
         Task::perform(preferences::save(prefs), Message::PreferencesSaved)
     }
 
-    pub fn view(&self) -> Element<Message> {
+    pub fn view(&'_ self) -> Element<'_, Message> {
         let errors =
-            if let validation::Status::Invalid(validation::Error::Parse { message, errors }) =
+            if let validation::Status::Invalid(validation::Error::Parse { message: _, errors }) =
                 &self.validation_status
             {
                 errors
                     .iter()
-                    .map(|(range, msg)| range)
+                    .map(|(range, _msg)| range)
                     .cloned()
                     .collect::<Vec<_>>()
             } else {
@@ -286,7 +286,7 @@ impl Editor {
             .into()
     }
 
-    pub fn title_bar(&self) -> Element<Message> {
+    pub fn title_bar(&'_ self) -> Element<'_, Message> {
         let new_icon = icon('\u{e804}');
         let open_icon = icon('\u{f115}');
         let save_icon = icon('\u{e800}');

@@ -107,7 +107,7 @@ impl Halo {
         Task::none()
     }
 
-    fn view(&self) -> Element<Message, Theme> {
+    fn view(&'_ self) -> Element<'_, Message, Theme> {
         let panes = pane_grid(&self.panes, |_id, pane, _is_maximized| {
             pane.view(&self.editor, &self.viewer).into()
         })
