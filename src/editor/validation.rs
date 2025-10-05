@@ -2,9 +2,10 @@ use crate::FragmentShader;
 use crate::editor::{Element, Message, icon};
 use crate::theme::ContainerClass;
 use iced::widget::tooltip;
-use naga::valid::Capabilities;
+use naga::valid::{Capabilities, ModuleInfo, ShaderStages, ValidationError};
 use std::ops::Range;
 use std::sync::Arc;
+use naga::{ShaderStage, WithSpan};
 
 #[derive(Default, Debug)]
 pub enum Status {
@@ -17,7 +18,7 @@ pub enum Status {
 
 impl Status {
     pub fn icon(&'_ self) -> Element<'_, Message> {
-        //TODO colors
+        // TODO: Icon Colors
         let icon = match self {
             Status::Validated => icon('\u{e801}'),
             Status::Invalid(_) => icon('\u{e802}'),
@@ -39,9 +40,9 @@ impl Status {
     }
 }
 
-//assumes shader is wgsl
+// Assumes shader is WGSL
 pub async fn validate(shader: Arc<FragmentShader>) -> Result<Arc<FragmentShader>, Error> {
-    //parse separately so we can show errors instead of panicking on pipeline creation
+    // Parse separately so we can show errors instead of panicking on pipeline creation
     let concat_shader = format!(
         "{}\n{}",
         include_str!("../viewer/shaders/uniforms.wgsl"),
@@ -57,9 +58,16 @@ pub async fn validate(shader: Arc<FragmentShader>) -> Result<Arc<FragmentShader>
                 .collect::<Vec<_>>(),
         })?;
 
+    let contains_frag = parsed.entry_points.iter()
+        .any(|ep| ep.name == "fs_main" && ep.stage == ShaderStage::Fragment);
+
+    if !contains_frag {
+        return Err(Error::Validation("Missing fragment entry point 'fs_main'.".to_string()));
+    }
+
     naga::valid::Validator::new(
         naga::valid::ValidationFlags::default(),
-        Capabilities::all(), //TODO get from device capabilities
+        Capabilities::all(), // TODO: Get from device capabilities
     )
     .validate(&parsed)
     .map_err(|err| Error::Validation(err.to_string()))?;
