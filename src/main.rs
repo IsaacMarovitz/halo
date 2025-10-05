@@ -2,7 +2,6 @@ mod editor;
 mod preferences;
 mod theme;
 mod viewer;
-mod widget;
 
 use crate::editor::{Editor, Event};
 use crate::preferences::Preferences;
