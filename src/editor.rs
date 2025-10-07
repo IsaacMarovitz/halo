@@ -9,13 +9,12 @@ use crate::{FragmentShader, JETBRAINS_MONO, preferences};
 use iced::alignment::Horizontal;
 use iced::keyboard::key::Named;
 use iced::widget::text_editor::{Action, Binding, KeyPress};
-use iced::widget::{
-    button, checkbox, column, container, row, scrollable, text, text_editor, tooltip,
-};
-use iced::{Alignment, Font, Length, Task, keyboard};
+use iced::widget::{button, checkbox, column, container, row, scrollable, text, text_editor, tooltip, Text};
+use iced::{Alignment, Length, Task, keyboard, Font};
 use std::ops::Range;
 use std::path::PathBuf;
 use std::sync::Arc;
+use lucide_icons::Icon;
 
 type Element<'a, Message> = iced::Element<'a, Message, Theme>;
 
@@ -310,10 +309,6 @@ impl Editor {
     }
 
     pub fn title_bar(&'_ self) -> Element<'_, Message> {
-        let new_icon = icon('\u{e804}');
-        let open_icon = icon('\u{f115}');
-        let save_icon = icon('\u{e800}');
-
         let validation_controls = container(
             row![
                 container(self.validation_status.icon())
@@ -329,9 +324,9 @@ impl Editor {
 
         let file_controls = container(
             row![
-                control_button(new_icon, "Create a new shader", Message::New),
-                control_button(open_icon, "Open a shader file", Message::Open),
-                control_button(save_icon, "Save current shader", Message::Save),
+                control_button(icon(Icon::FilePlus), "Create a new shader", Message::New),
+                control_button(icon(Icon::FolderOpen), "Open a shader file", Message::Open),
+                control_button(icon(Icon::Save), "Save current shader", Message::Save),
             ]
             .spacing(10)
             .align_y(Alignment::Center),
@@ -351,6 +346,12 @@ impl Editor {
     }
 }
 
+fn icon<'a>(icon: Icon) -> Element<'a, Message> {
+    text(icon.unicode().to_string())
+        .font(Font::with_name("lucide"))
+        .into()
+}
+
 fn control_button<'a>(
     content: impl Into<Element<'a, Message>>,
     label: &'a str,
@@ -362,13 +363,6 @@ fn control_button<'a>(
         .padding(10)
         .class(ContainerClass::Tooltip)
         .into()
-}
-
-// TODO: Colored icons once I have an actual theme
-pub fn icon<'a, Message: 'static>(char: char) -> Element<'a, Message> {
-    const FONT: Font = Font::with_name("halo-icons");
-
-    text(char).font(FONT).into()
 }
 
 fn tmp_error_view<'a>(

@@ -99,41 +99,36 @@ impl container::Catalog for Theme {
     }
 
     fn style(&self, class: &Self::Class<'_>) -> container::Style {
+        let mut style = container::Style::default();
         let palette = self.palette();
 
         match class {
-            ContainerClass::Tooltip => container::Style {
-                text_color: Some(palette.text),
-                background: Some(palette.base_darker.into()),
-                border: Border {
+            ContainerClass::Tooltip => {
+                style.background = Some(palette.base_darker.into());
+                style.text_color = Some(palette.text);
+                style.border = Border {
                     radius: BORDER_RADIUS.into(),
                     width: BORDER_WIDTH,
                     color: palette.base_darkest,
-                },
-                shadow: Default::default(),
+                };
             },
-            ContainerClass::None => container::Style::default(),
-            ContainerClass::Controls => container::Style {
-                text_color: Some(palette.text),
-                background: Some(palette.base_darkest.into()),
-                border: Border {
-                    radius: Default::default(),
-                    width: 0.0,
-                    color: Default::default(),
-                },
-                shadow: Default::default(),
+            ContainerClass::Controls => {
+                style.background = Some(palette.base_darker.into());
+                style.text_color = Some(palette.text);
             },
-            ContainerClass::Error => container::Style {
-                text_color: Some(palette.error),
-                background: Some(palette.base_darkest.into()),
-                border: Border {
+            ContainerClass::Error => {
+                style.background = Some(palette.base_darkest.into());
+                style.text_color = Some(palette.error);
+                style.border = Border {
                     radius: Default::default(),
                     width: 1.0,
                     color: palette.error,
-                },
-                shadow: Default::default(),
+                };
             },
-        }
+            _ => {}
+        };
+
+        style
     }
 }
 
@@ -210,41 +205,25 @@ impl button::Catalog for Theme {
     }
 
     fn style(&self, _class: &Self::Class<'_>, status: Status) -> button::Style {
+        let mut style = button::Style::default();
         let palette = self.palette();
 
+        style.background = Some(palette.base_lighter.into());
+        style.text_color = palette.text;
+        style.border = Border {
+            radius: 2.0.into(),
+            width: 0.0,
+            color: Default::default(),
+        };
+
         match status {
-            Status::Active => button::Style {
-                shadow: Default::default(),
-                background: Some(palette.base.into()),
-                border: Border {
-                    radius: 2.0.into(),
-                    width: 0.0,
-                    color: Default::default(),
-                },
-                text_color: palette.text,
+            Status::Active => {
+                style.background = Some(palette.base.into());
             },
-            Status::Hovered => button::Style {
-                shadow: Default::default(),
-                background: Some(palette.base_lighter.into()),
-                border: Border {
-                    radius: 2.0.into(),
-                    width: 0.0,
-                    color: Default::default(),
-                },
-                text_color: palette.text,
-            },
-            Status::Pressed => button::Style {
-                shadow: Default::default(),
-                background: Some(palette.base_lighter.into()),
-                border: Border {
-                    radius: 2.0.into(),
-                    width: 0.0,
-                    color: Default::default(),
-                },
-                text_color: palette.text,
-            },
-            Status::Disabled => Default::default(),
-        }
+            _ => {}
+        };
+
+        style
     }
 }
 

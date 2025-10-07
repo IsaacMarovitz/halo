@@ -10,7 +10,8 @@ use crate::viewer::Viewer;
 use iced::font::{Family, Stretch, Style, Weight};
 use iced::widget::pane_grid::Configuration;
 use iced::widget::{container, pane_grid};
-use iced::{Element, Font, Length, Size, Subscription, Task, keyboard};
+use iced::{Element, Font, Length, Size, Task};
+use lucide_icons::LUCIDE_FONT_BYTES;
 use std::sync::Arc;
 
 pub type FragmentShader = String;
@@ -28,7 +29,7 @@ fn main() -> iced::Result {
     iced::application(Halo::title, Halo::update, Halo::view)
         .theme(Halo::theme)
         .font(include_bytes!("../fonts/JetBrainsMono-Regular.ttf").as_slice())
-        .font(include_bytes!("../fonts/halo-icons.ttf").as_slice())
+        .font(LUCIDE_FONT_BYTES)
         .default_font(Font::MONOSPACE)
         .window_size(Size::new(1600.0, 900.0))
         .run_with(|| Halo::new(()))

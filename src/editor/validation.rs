@@ -6,6 +6,7 @@ use naga::valid::Capabilities;
 use naga::ShaderStage;
 use std::ops::Range;
 use std::sync::Arc;
+use lucide_icons::Icon;
 
 #[derive(Default, Debug)]
 pub enum Status {
@@ -20,10 +21,10 @@ impl Status {
     pub fn icon(&'_ self) -> Element<'_, Message> {
         // TODO: Icon Colors
         let icon = match self {
-            Status::Validated => icon('\u{e801}'),
-            Status::Invalid(_) => icon('\u{e802}'),
-            Status::Validating => icon('\u{e803}'),
-            Status::NeedsValidation => icon('\u{e803}'),
+            Status::Validated => icon(Icon::CircleCheck),
+            Status::Invalid(_) => icon(Icon::CircleX),
+            Status::Validating => icon(Icon::CircleDot),
+            Status::NeedsValidation => icon(Icon::CircleDashed),
         };
 
         let label = match self {
