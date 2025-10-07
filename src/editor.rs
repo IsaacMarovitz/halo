@@ -202,10 +202,10 @@ impl Editor {
                 return (Event::None, self.save_prefs());
             }
             Message::Undo => {
-                //TODO!
+                // TODO!
             }
             Message::Redo => {
-                //TODO!
+                // TODO!
             }
             Message::Indent => {
                 const INDENT_SIZE: usize = 4;
@@ -226,7 +226,7 @@ impl Editor {
                 }
             }
             Message::Search => {
-                //TODO!
+                // TODO!
             }
             Message::PreferencesSaved(_) => {
                 println!("Prefs saved");
@@ -269,7 +269,7 @@ impl Editor {
                     theme: self.theme,
                     errors,
                 },
-                |highlight, _theme| highlight.to_format(), // Note: takes theme parameter
+                |highlight, _theme| highlight.to_format(),
             )
             .on_action(Message::Action);
 
@@ -282,7 +282,7 @@ impl Editor {
         .width(Length::Fill);
 
         let char_count = container(
-            //TODO expose a len() function from iced editor to avoid extra allocation
+            // TODO: Expose a len() function from iced editor to avoid extra allocation
             text(self.content.text().len().to_string() + " chars"),
         )
         .align_x(Horizontal::Right);
@@ -364,7 +364,7 @@ fn control_button<'a>(
         .into()
 }
 
-//TODO colored icons once I have an actual theme
+// TODO: Colored icons once I have an actual theme
 pub fn icon<'a, Message: 'static>(char: char) -> Element<'a, Message> {
     const FONT: Font = Font::with_name("halo-icons");
 
@@ -381,7 +381,7 @@ fn tmp_error_view<'a>(
         .map(|(range, err_msg)| {
             let slice = shader.get(range.start..=range.end);
             if let Some(slice) = slice {
-                //TODO can't render tabs..?
+                // TODO: Can't render tabs..?
                 text(format!("{msg}:\n    {err_msg}:\n        {slice}"))
             } else {
                 text(format!("{msg}:\n    {err_msg}"))

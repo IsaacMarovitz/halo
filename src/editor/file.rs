@@ -19,7 +19,7 @@ pub async fn save(path: Option<PathBuf>, contents: String) -> Result<PathBuf, Er
     let path = if let Some(path) = path {
         path
     } else {
-        //TODO this lags UI
+        // TODO: This lags UI
         rfd::AsyncFileDialog::new()
             .add_filter("supported shader extensions", &FILE_EXT_FILTERS)
             .save_file()

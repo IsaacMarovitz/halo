@@ -70,7 +70,6 @@ impl<Message> iced::widget::shader::Program<Message> for Viewer {
                 time: Instant::now() - self.start,
                 mouse: match cursor {
                     mouse::Cursor::Available(pt) => pt,
-                    //we go full circle..
                     mouse::Cursor::Unavailable => Point::new(-1.0, -1.0),
                 },
                 bounds,

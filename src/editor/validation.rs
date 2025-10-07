@@ -1,9 +1,9 @@
+use crate::editor::{icon, Element, Message};
 use crate::FragmentShader;
-use crate::editor::{Element, Message, icon};
 use crate::theme::ContainerClass;
 use iced::widget::tooltip;
-use naga::valid::{Capabilities, ModuleInfo, ShaderStages, ValidationError};
-use naga::{ShaderStage, WithSpan};
+use naga::valid::Capabilities;
+use naga::ShaderStage;
 use std::ops::Range;
 use std::sync::Arc;
 

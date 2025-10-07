@@ -62,7 +62,7 @@ impl Halo {
                     b: Box::new(Configuration::Pane(Pane::Editor)),
                 }),
             },
-            //TODO load last shader file from settings
+            // TODO: Load last shader file from settings
             Task::perform(preferences::load(), Message::Loaded),
         )
     }

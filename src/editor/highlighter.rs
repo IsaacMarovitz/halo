@@ -18,7 +18,6 @@ const LINES_PER_SNAPSHOT: usize = 50;
 pub struct Highlighter {
     syntax: &'static parsing::SyntaxReference,
     highlighter: syntect::highlighting::Highlighter<'static>,
-    //TODO wut
     caches: Vec<(parsing::ParseState, parsing::ScopeStack)>,
     current_line: usize,
     errors: Vec<Range<usize>>,
@@ -55,7 +54,7 @@ impl iced::advanced::text::Highlighter for Highlighter {
     type Settings = Settings;
     type Highlight = Highlight;
 
-    //TODO
+    // TODO
     type Iterator<'a> = Box<dyn Iterator<Item = (Range<usize>, Self::Highlight)> + 'a>;
 
     fn new(settings: &Self::Settings) -> Self {
@@ -83,7 +82,7 @@ impl iced::advanced::text::Highlighter for Highlighter {
         self.current_line = 0;
     }
 
-    //TODO review
+    // TODO: Review
     fn change_line(&mut self, line: usize) {
         let snapshot = line / LINES_PER_SNAPSHOT;
 
@@ -117,7 +116,7 @@ impl iced::advanced::text::Highlighter for Highlighter {
 
         let (parser, stack) = self.caches.last_mut().expect("Caches must not be empty");
 
-        //parse, the single line, returns scope stack operation
+        // Parse, the single line, returns scope stack operation
         let ops = parser.parse_line(line, &WGSL_SYNTAX).unwrap_or_default();
 
         let highlighter = &self.highlighter;
